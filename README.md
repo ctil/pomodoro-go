@@ -1,2 +1,2 @@
-# go-pomodoro
+# pomodoro-go
 Command line pomodoro timer
