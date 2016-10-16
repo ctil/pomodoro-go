@@ -1,0 +1,3 @@
+- Command line flags that customize timings
+- Color
+- Sound
