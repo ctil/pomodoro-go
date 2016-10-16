@@ -3,7 +3,10 @@ package main
 import (
 	"fmt"
 	"math"
+	"os"
+	"os/signal"
 	"strings"
+	"syscall"
 	"time"
 )
 
@@ -55,18 +58,45 @@ func printTransition(message string) {
 	/* Prints a transition message */
 	fmt.Printf("%s", message)
 	for i := 0; i <= 5; i++ {
-		time.Sleep(time.Second / 4)
+		time.Sleep(time.Second / 5)
 		fmt.Printf(".")
 	}
+}
+
+func printSummary(finishedPomodoros int, startTime time.Time) {
+	/* Prints a summary of the work completed */
+	if finishedPomodoros == 1 {
+		fmt.Println("\nFinished 1 Pomodoro!")
+	} else {
+		fmt.Printf("\nFinished %d Pomodoros!\n", finishedPomodoros)
+	}
+	fmt.Printf("Elapsed Time: %v\n", time.Since(startTime))
 }
 
 func main() {
 	var iterationNum int = 1
 	// How many pomodoros to run. If 0, run indefinitely.
 	var iterations int = 0
+	var resting bool = false
+	var startTime time.Time = time.Now()
+
+	// Cleanup on CTRL-C
+	sig := make(chan os.Signal, 1)
+	signal.Notify(sig, syscall.SIGINT)
+	go func() {
+		<-sig
+		var finishedPomodoros int = iterationNum
+		if !resting {
+			finishedPomodoros = iterationNum - 1
+		}
+		printSummary(finishedPomodoros, startTime)
+		os.Exit(0)
+	}()
+
 	for {
 		// Pomodoro
 		doIteration(defaultPomodoro, iterationNum, "Pomodoro")
+		resting = true
 		printTransition(fmt.Sprintf("Pomodoro %d finished! Starting rest period",
 			iterationNum))
 
@@ -74,14 +104,11 @@ func main() {
 		doIteration(defaultRest, iterationNum, "Rest Period")
 
 		if iterationNum != 0 && iterationNum == iterations {
-			if iterationNum == 1 {
-				fmt.Println("Finished 1 Pomodoro!")
-			} else {
-				fmt.Printf("Finished %d Pomodoros!\n", iterationNum)
-			}
+			printSummary(iterationNum, startTime)
 			break
 		} else {
 			iterationNum += 1
+			resting = false
 			printTransition(fmt.Sprintf("Starting Pomodoro %d",
 				iterationNum))
 		}
