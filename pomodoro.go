@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"github.com/gosuri/uilive"
 	"math"
@@ -11,17 +12,16 @@ import (
 	"time"
 )
 
-const (
-	// Default length of pomodoro
-	defaultPomodoro time.Duration = time.Minute * 25
-	// Default length of rest period
-	defaultRest time.Duration = time.Minute * 5
-
-	lenProgressBar int = 78
-)
+// Command line options
+type options struct {
+	length     time.Duration // Length of pomodoro
+	restLength time.Duration // Length of rest period
+	iterations int           // Number of iterations before exiting
+}
 
 func updateDisplay(writer *uilive.Writer, remainingTime time.Duration,
 	totalTime time.Duration, iterationNum int, name string) {
+	const lenProgressBar int = 78
 	/* Updates the terminal with time remaining and a progress bar */
 	minutes := int(remainingTime.Minutes())
 	seconds := int(math.Floor(remainingTime.Seconds()+0.5)) % 60
@@ -72,10 +72,18 @@ func printSummary(writer *uilive.Writer, finishedPomodoros int, startTime time.T
 	fmt.Fprintln(writer, "Elapsed Time: ", time.Since(startTime))
 }
 
+func setupOptions() options {
+	// Retrieves options from command line flags
+	pomodoro := flag.Float64("length", 25, "Length of the pomodoro, in minutes")
+	rest := flag.Float64("rest", 5, "Length of the rest period, in minutes")
+	iterations := flag.Int("iterations", 0, "Number of iterations to run before exiting. If zero, run indefinetely")
+	flag.Parse()
+	return options{time.Second * time.Duration(*pomodoro*60), time.Second * time.Duration(*rest*60), *iterations}
+}
+
 func main() {
+	opts := setupOptions()
 	iterationNum := 1
-	// How many pomodoros to run. If 0, run indefinitely.
-	iterations := 0
 	resting := false
 	startTime := time.Now()
 	writer := uilive.New()
@@ -97,15 +105,15 @@ func main() {
 
 	for {
 		// Pomodoro
-		doIteration(writer, defaultPomodoro, iterationNum, "Pomodoro")
+		doIteration(writer, opts.length, iterationNum, "Pomodoro")
 		resting = true
 		printTransition(writer, fmt.Sprintf("Pomodoro %d finished! Starting rest period",
 			iterationNum))
 
 		// Rest Period
-		doIteration(writer, defaultRest, iterationNum, "Rest Period")
+		doIteration(writer, opts.restLength, iterationNum, "Rest Period")
 
-		if iterationNum != 0 && iterationNum == iterations {
+		if iterationNum != 0 && iterationNum == opts.iterations {
 			printSummary(writer, iterationNum, startTime)
 			break
 		} else {
