@@ -106,22 +106,20 @@ func main() {
 	for {
 		// Pomodoro
 		doIteration(writer, opts.length, iterationNum, "Pomodoro")
-		resting = true
-		printTransition(writer, fmt.Sprintf("Pomodoro %d finished! Starting rest period",
-			iterationNum))
-
-		// Rest Period
-		doIteration(writer, opts.restLength, iterationNum, "Rest Period")
-
 		if iterationNum != 0 && iterationNum == opts.iterations {
 			printSummary(writer, iterationNum, startTime)
 			break
-		} else {
-			iterationNum += 1
-			resting = false
-			printTransition(writer, fmt.Sprintf("Starting Pomodoro %d",
-				iterationNum))
 		}
+
+		// Rest Period
+		resting = true
+		printTransition(writer, fmt.Sprintf("Pomodoro %d finished! Starting rest period",
+			iterationNum))
+		doIteration(writer, opts.restLength, iterationNum, "Rest Period")
+		iterationNum += 1
+		resting = false
+		printTransition(writer, fmt.Sprintf("Starting Pomodoro %d",
+			iterationNum))
 	}
 	writer.Stop()
 }
