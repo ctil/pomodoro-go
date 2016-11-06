@@ -23,11 +23,11 @@ const (
 func updateDisplay(writer *uilive.Writer, remainingTime time.Duration,
 	totalTime time.Duration, iterationNum int, name string) {
 	/* Updates the terminal with time remaining and a progress bar */
-	var minutes int = int(remainingTime.Minutes())
-	var seconds int = int(math.Floor(remainingTime.Seconds()+0.5)) % 60
-	var percentComplete float64 = float64(totalTime-remainingTime) / float64(totalTime)
-	var progress int = int(percentComplete * float64(lenProgressBar))
-	fmt.Fprintf(writer, "%s %d\n", name, iterationNum)
+	minutes := int(remainingTime.Minutes())
+	seconds := int(math.Floor(remainingTime.Seconds()+0.5)) % 60
+	percentComplete := float64(totalTime-remainingTime) / float64(totalTime)
+	progress := int(percentComplete * float64(lenProgressBar))
+	fmt.Fprintln(writer, name, iterationNum)
 	fmt.Fprintf(writer, "%v:%v (%v%%)\n", minutes, seconds, math.Floor(percentComplete*100))
 	fmt.Fprintf(writer, "|%s%s|\n", strings.Repeat("-", progress),
 		strings.Repeat(" ", lenProgressBar-progress))
@@ -37,7 +37,7 @@ func updateDisplay(writer *uilive.Writer, remainingTime time.Duration,
 func doIteration(writer *uilive.Writer, duration time.Duration,
 	iterationNum int, name string) {
 	/* Runs a single iteration of a pomodoro or rest period. */
-	var startTime time.Time = time.Now()
+	startTime := time.Now()
 	ticker := time.NewTicker(time.Second)
 	updateDisplay(writer, duration, duration, iterationNum, name)
 	for {
@@ -65,19 +65,19 @@ func printTransition(writer *uilive.Writer, message string) {
 func printSummary(writer *uilive.Writer, finishedPomodoros int, startTime time.Time) {
 	/* Prints a summary of the work completed */
 	if finishedPomodoros == 1 {
-		fmt.Fprintf(writer, "\nFinished 1 Pomodoro!\n")
+		fmt.Fprintln(writer, "\nFinished 1 Pomodoro!")
 	} else {
 		fmt.Fprintf(writer, "\nFinished %d Pomodoros!\n", finishedPomodoros)
 	}
-	fmt.Fprintf(writer, "Elapsed Time: %v\n", time.Since(startTime))
+	fmt.Fprintln(writer, "Elapsed Time: ", time.Since(startTime))
 }
 
 func main() {
-	var iterationNum int = 1
+	iterationNum := 1
 	// How many pomodoros to run. If 0, run indefinitely.
-	var iterations int = 0
-	var resting bool = false
-	var startTime time.Time = time.Now()
+	iterations := 0
+	resting := false
+	startTime := time.Now()
 	writer := uilive.New()
 	writer.Start()
 
@@ -86,7 +86,7 @@ func main() {
 	signal.Notify(sig, syscall.SIGINT)
 	go func() {
 		<-sig
-		var finishedPomodoros int = iterationNum
+		finishedPomodoros := iterationNum
 		if !resting {
 			finishedPomodoros = iterationNum - 1
 		}
