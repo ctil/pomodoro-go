@@ -116,7 +116,7 @@ func main() {
 		printTransition(writer, fmt.Sprintf("Pomodoro %d finished! Starting rest period",
 			iterationNum))
 		doIteration(writer, opts.restLength, iterationNum, "Rest Period")
-		iterationNum += 1
+		iterationNum++
 		resting = false
 		printTransition(writer, fmt.Sprintf("Starting Pomodoro %d",
 			iterationNum))
